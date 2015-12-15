@@ -5,7 +5,7 @@ import sys
 
 
 def main():
-    Bank(int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))
+    Bank(sys.argv[1],sys.argv[2])
 
 if __name__ == '__main__':
     main()
