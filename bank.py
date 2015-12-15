@@ -23,19 +23,27 @@ class Bank:
         time.sleep(2)
         for i in xrange(0, total_banks):
             if i != bank_number:
-                self.bank_interface_out_list.append(bankInterfaceOut(
+               self.bank_interface_out_list.append(bankInterfaceOut(
                                         start_port+i, i, bank_number))
+        # TODO: new tread(money sender)
         threading.Timer(int(random.uniform(2,5)), self.money_sender).start()
 
+
     def money_sender(self):
-        with self.lock:
-            money = int(random.uniform(1,self.total_money))
-            self.bank_interface_out_list[random.randint(0,
-                    len(self.bank_interface_out_list)-1)].send_money(money)
-            self.total_money -= money
-            print "i'm " + str(self.bank_number) + " new total " +\
-                    str(self.total_money)
-        threading.Timer(random.randint(2,5), self.money_sender).start()
+        while True:
+            with self.lock:
+                money = int(random.uniform(1,self.total_money))
+                to_send = random.randint(0,len(self.bank_interface_out_list)-1)
+                byte_sent =self.bank_interface_out_list[to_send].send_money(money)
+                if byte_sent != 0:
+                    self.total_money -= money
+                    print "i'm " + str(self.bank_number) + " new total " +\
+                            str(self.total_money)
+                else:
+                    print "Somethings gone wrong with bank: " + str(to_send) +" money are not transfered and connection with that bank is closed"
+                    del self.bank_interface_out_list[to_send]
+            time.sleep(random.randint(2,5))
+        #threading.Timer(random.randint(2,5), self.money_sender).start()
 
     def setup_server(self, port):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,7 +72,7 @@ class Bank:
                         #time.sleep(2)
                         print "I'm " + str(self.bank_number) + " new total "\
                                 + str(self.total_money)
-                        
+
                 except:
                     #is a snapshot marker
                     pass
