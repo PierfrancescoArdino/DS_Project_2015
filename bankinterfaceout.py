@@ -18,5 +18,10 @@ class bankInterfaceOut:
                 print "somethings gone wrong, i'm trying to connect again in 2 seconds"
                 time.sleep(2)
         self.bank_id = bank_id
-        self.sock.send(str(my_id))
+        self.sock.send('%16s' % (my_id))
+    
+    def send_money(self, amount):
+        self.sock.send('%16s' % (amount))
 
+    def start_snapshot(self):
+        pass

@@ -6,11 +6,16 @@ import signal
 import psutil
 from bankinterfaceout import bankInterfaceOut
 import time
+import random
+
+random.seed()
 
 class Bank:
 
 
     def __init__(self, start_port, bank_number, total_banks):
+        self.lock = threading.Lock()
+        self.total_money = 1000
         self.bank_number = bank_number
         self.bank_interface_out_list = []
         threading.Thread(target = self.setup_server,
@@ -20,7 +25,17 @@ class Bank:
             if i != bank_number:
                 self.bank_interface_out_list.append(bankInterfaceOut(
                                         start_port+i, i, bank_number))
+        threading.Timer(int(random.uniform(2,5)), self.money_sender).start()
 
+    def money_sender(self):
+        with self.lock:
+            money = int(random.uniform(1,self.total_money))
+            self.bank_interface_out_list[random.randint(0,
+                    len(self.bank_interface_out_list)-1)].send_money(money)
+            self.total_money -= money
+            print "i'm " + str(self.bank_number) + " new total " +\
+                    str(self.total_money)
+        threading.Timer(random.randint(2,5), self.money_sender).start()
 
     def setup_server(self, port):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,15 +46,26 @@ class Bank:
 
         while True:
             (client_sock, addr) = server_socket.accept()
-            bank_id = client_sock.recv(16)
+            bank_id = int(client_sock.recv(16))
             print "i'm bank " + str(self.bank_number) + " received from " + str(bank_id)
             threading.Thread( target = self.recv_handl,
                                 args = (client_sock, bank_id)).start()
 
     def recv_handl(self, client_sock, bank_id):
-        print "bank id: " + bank_id
         while True:
             tmp = client_sock.recv(16)
             if tmp is not None:
-                print "received" + tmp
+                try:
+                    money = int(tmp)
+                    print "I'm " + str(self.bank_number) + " received from "\
+                            +str(bank_id) + " euro " + str(money)
+                    with self.lock:
+                        self.total_money += money
+                        #time.sleep(2)
+                        print "I'm " + str(self.bank_number) + " new total "\
+                                + str(self.total_money)
+                        
+                except:
+                    #is a snapshot marker
+                    pass
 
