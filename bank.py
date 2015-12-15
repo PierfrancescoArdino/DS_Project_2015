@@ -2,6 +2,8 @@
 
 import socket
 import threading
+import signal
+import psutil
 from bankinterfaceout import bankInterfaceOut
 import time
 
@@ -21,6 +23,7 @@ class Bank:
 
     def setup_server(self, port):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         #server_socket.bind((socket.gethostname(), port))
         server_socket.bind(('', port))
         print "bind " + str( port)
@@ -37,5 +40,6 @@ class Bank:
         print "bank id: " + bank_id
         while True:
             tmp = client_sock.recv(16)
-            print "received" +tmp
+            if tmp is not None:
+                print "received" +tmp
 
