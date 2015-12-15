@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 from bank import Bank
 import subprocess
@@ -7,7 +7,7 @@ import signal
 import os
 import psutil
 
-START_PORT = 25000
+START_PORT = 9000
 NUMBER_OF_BANKS = 4
 
 
