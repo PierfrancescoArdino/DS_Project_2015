@@ -38,5 +38,20 @@ class bankInterfaceOut():
                 attempt += 1
                 b_sent = 0
         return b_sent
-    def start_snapshot(self):
-        pass
+    def send_token(self, snapshot_id):
+        attempt = 0
+        b_sent = 0
+        while attempt < 3:
+            try:
+                b_sent = self.sock.send('S%15s' % (snapshot_id))
+                attempt = 4
+            except socket_error as serr:
+                print "somethings gone wrong during the send of token, bank "\
+                        +str(self.my_id) + " donesn't responds i'm \
+                        trying to send again in 2 seconds"
+                time.sleep(2)
+                attempt += 1
+                b_sent = 0
+        return b_sent
+    def get_bank_id(self):
+        return self.bank_id
