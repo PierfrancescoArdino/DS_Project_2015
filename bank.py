@@ -12,7 +12,7 @@ random.seed()
 
 class Bank:
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, flag_snapshot):
         self.lock = threading.Lock()
         self.total_money = 1000
         self.bank_number = host + ':' + str(port)
@@ -28,7 +28,7 @@ class Bank:
         #self.snapshot_token_received = [False] * len(self.bank_list)
         threading.Thread(target = self.setup_server,
                                 args = (int(port),)).start()
-        if int(port) == 8001:
+        if flag_snapshot == '1':
             threading.Timer(7,self.start_snapshot).start()
 
         time.sleep(2)
@@ -57,7 +57,7 @@ class Bank:
                             " money are not transfered and connection with\
                             that bank is closed"
                     del self.bank_interface_out_list[to_send]
-            time.sleep(random.randint(2,5))
+            time.sleep(random.randint(0,2))
         #threading.Timer(random.randint(2,5), self.money_sender).start()
 
     def setup_server(self, port):
@@ -78,64 +78,81 @@ class Bank:
         while True:
             tmp = client_sock.recv(16)
             if tmp is not None:
-                if tmp[0:1] != "S":#is a normal money transfer
-                    money = int(tmp)
-                    print "I'm " + str(self.bank_number) + " received from "\
-                            +str(bank_id) + " euro " + str(money)
-                    with self.lock:
-                        self.total_money += money
-                        #time.sleep(2)
-                        print "I'm " + str(self.bank_number) + " new total "\
-                                + str(self.total_money)
-                        if self.snapshot_mode != None:
-                            for i in self.bank_list:
-                                if (not i['token_received']) and i['id'] == bank_id:
-                                    self.snapshot_received_money += money
+                self.pkt_handler(tmp, bank_id)
+    
+    def pkt_handler(self, pkt, bank_id):
+        if pkt[0:1] != "S":#is a normal money transfer
+            money = int(pkt)
+            self.money_pkt_handler(money, bank_id)
 
-                else:
-                    with self.lock:
-                        #is a snapshot marker
-                        print "@bank "+self.bank_number + " received token from "+ bank_id
-                        snapshot_id = int(tmp[1:])
-                        if self.snapshot_mode is None:
-                            #time.sleep(1)
-                            self.snapshot_received_money = 0
-                            self.snapshot_mode = snapshot_id
-                            self.snapshot_internal_state = self.total_money
-                            for i in self.bank_list:
-                                if i['id'] != self.bank_number:
-                                    i['token_received'] = False
-                            for i in self.bank_interface_out_list:
-                                i.send_token(snapshot_id)
-                        tmp_flag = True
-                        for i in self.bank_list:
-                            if i['id'].lstrip() == bank_id.lstrip():
-                                i['token_received'] = True
-                            tmp_flag = tmp_flag and i['token_received']
+        else:
+            self.snapshot_pkt_handler(int(pkt[1:]), bank_id)
 
-                        if tmp_flag and (self.snapshot_mode is not None):
-                            #finish snapshot
-                            print "@@========="
-                            print "@@snapshot finished on bank " + self.bank_number
-                            self.snapshot_mode = None
-                            print "@@internal state %s received %s" %\
-                            (self.snapshot_internal_state,
-                                    self.snapshot_received_money)
-                            print "@@========="
+    def money_pkt_handler(self, money, bank_id):
+        with self.lock:
+            print "I'm " + str(self.bank_number) + " received from "\
+                    +str(bank_id) + " euro " + str(money)
+            self.total_money += money
+            #time.sleep(2)
+            print "I'm " + str(self.bank_number) + " new total "\
+                    + str(self.total_money)
+            if self.snapshot_mode != None:
+                for i in self.bank_list:
+                    if (not i['token_received']) and i['id'] == bank_id:
+                        self.snapshot_received_money += money
+
+    def snapshot_pkt_handler(self, snapshot_id, bank_id):
+        with self.lock:
+            print "@bank "+self.bank_number + " received token from "+ bank_id
+            if self.snapshot_mode is None:
+                #time.sleep(1)
+                self.snapshot_received_money = 0
+                self.snapshot_mode = snapshot_id
+                self.snapshot_internal_state = self.total_money
+                for i in self.bank_list:
+                    if i['id'] != self.bank_number:
+                        i['token_received'] = False
+                for i in self.bank_interface_out_list:
+                    i.send_token(snapshot_id)
+            tmp_flag = True
+            for i in self.bank_list:
+                if i['id'].lstrip() == bank_id.lstrip():
+                    i['token_received'] = True
+                tmp_flag = tmp_flag and i['token_received']
+
+            if tmp_flag and (self.snapshot_mode is not None):
+                #finish snapshot
+                self.snapshot_mode = None
+                print "@snapshot %s finished on bank %s " % (snapshot_id, self.bank_number)
+                print "@internal state %s money received during snapshot %s" %\
+                (self.snapshot_internal_state,
+                        self.snapshot_received_money)
+                #save log
+                with open("./logs/" + self.bank_number + ".log", 'a') as log:
+                    log.write(str(snapshot_id) + ' ' + str(self.snapshot_internal_state) + \
+                            ' ' + str(self.snapshot_received_money) + '\n')
+
+
                             
     def start_snapshot(self):
-        with self.lock:
-            self.snapshot_received_money = 0
-            self.snapshot_mode = 1
-            self.snapshot_internal_state = self.total_money
-            for i in self.bank_list:
-                if i['id'] != self.bank_number:
-                    i['token_received'] = False
-                else:
-                    i['token_received'] = True
-            for i in self.bank_interface_out_list:
-                time.sleep(3)
-                i.send_token(1)
+        snapshot_progressive_id = 0
+        while True:
+            if self.snapshot_mode is None:
+                with self.lock:
+                    snapshot_progressive_id += 1
+                    self.snapshot_received_money = 0
+                    self.snapshot_mode = snapshot_progressive_id 
+                    self.snapshot_internal_state = self.total_money
+                    for i in self.bank_list:
+                        if i['id'] != self.bank_number:
+                            i['token_received'] = False
+                        else:
+                            i['token_received'] = True
+                    for i in self.bank_interface_out_list:
+                        #time.sleep(3)
+                        i.send_token(snapshot_progressive_id)
+            time.sleep(5)
+
 
     def __parse_host_file(self):
 
@@ -147,8 +164,10 @@ class Bank:
         bank_list = []
         for line in tmp:
             d = {}
-            d['id'] = line
-            d['host'], d['port'] = line.split(':')
+            parsed_line = line.rsplit(':')
+            d['host'] = parsed_line[0]
+            d['port'] = parsed_line[1]
+            d['id'] = d['host'] + ':' + d['port']
             d['port'] = int(d['port'])
             d['token_received'] = False
             bank_list.append(d)

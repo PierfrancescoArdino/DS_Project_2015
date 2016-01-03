@@ -41,14 +41,23 @@ with open('./host.list','r') as bank_file:
 bank_list = []
 for line in tmp:
     d = {}
-    d['host'], d['port'] = line.split(':')
+    line_parsed = []
+    line_parsed = line.rsplit(':')
+    d['host'] = line_parsed[0]
+    d['port'] = line_parsed[1]
+    if len(line_parsed) == 3:
+        d['snapshot'] = 1
+    else:
+        d['snapshot'] = 0
+
     bank_list.append(d)
 
 for bank in bank_list:
     #if is a bank of this host
     if bank['host'] == sys.argv[1]:
         subprocess.Popen(['./bank_main.py', str(bank['host']),
-                                        str(bank['port'])])
+                                        str(bank['port']),\
+                                        str(bank['snapshot'])])
 
 while True:
     time.sleep(1)
