@@ -57,7 +57,7 @@ class Bank:
                             " money are not transfered and connection with\
                             that bank is closed"
                     del self.bank_interface_out_list[to_send]
-            time.sleep(random.randint(0,2))
+            #time.sleep(random.randint(2,5))
         #threading.Timer(random.randint(2,5), self.money_sender).start()
 
     def setup_server(self, port):
