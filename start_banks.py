@@ -11,8 +11,6 @@ import os
 import sys
 import psutil
 
-START_PORT = 9000
-NUMBER_OF_BANKS = 4
 
 
 def kill_all(s, frame):

@@ -56,10 +56,10 @@ class Bank:
                         print "i'm " + str(self.bank_number) + " new total " +\
                                 str(self.total_money)
                     else:
-                        print "Somethings gone wrong with bank: " + str(to_send) +\
+                        print "Somethings goes wrong with bank " + str(self.bank_interface_out_list[to_send].port) +\
                             " money are not transfered and connection with\
                             that bank is closed"
-                        del self.bank_interface_out_list[to_send]
+                       # del self.bank_interface_out_list[to_send]
             #time.sleep(random.randint(2,5))
         #threading.Timer(random.randint(2,5), self.money_sender).start()
 
