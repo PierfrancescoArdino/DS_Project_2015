@@ -22,7 +22,7 @@ class Bank:
         is None if the bank is not in snapshot mode
         contain current snapshot ID otherwhise
         """
-        self.snapshot_mode = None 
+        self.snapshot_mode = None
         self.snapshot_internal_state = None
         self.snapshot_received_money = 0
         #self.snapshot_token_received = [False] * len(self.bank_list)
@@ -45,18 +45,19 @@ class Bank:
     def money_sender(self):
         while True:
             with self.lock:
-                money = int(random.uniform(1,self.total_money))
-                to_send = random.randint(0,len(self.bank_interface_out_list)-1)
-                byte_sent =self.bank_interface_out_list[to_send].send_money(money)
-                if byte_sent != 0:
-                    self.total_money -= money
-                    print "i'm " + str(self.bank_number) + " new total " +\
-                            str(self.total_money)
-                else:
-                    print "Somethings gone wrong with bank: " + str(to_send) +\
+                if self.total_money != 0:
+                    money = int(random.uniform(1,self.total_money))
+                    to_send = random.randint(0,len(self.bank_interface_out_list)-1)
+                    byte_sent =self.bank_interface_out_list[to_send].send_money(money)
+                    if byte_sent != 0:
+                        self.total_money -= money
+                        print "i'm " + str(self.bank_number) + " new total " +\
+                                str(self.total_money)
+                    else:
+                        print "Somethings gone wrong with bank: " + str(to_send) +\
                             " money are not transfered and connection with\
                             that bank is closed"
-                    del self.bank_interface_out_list[to_send]
+                        del self.bank_interface_out_list[to_send]
             #time.sleep(random.randint(2,5))
         #threading.Timer(random.randint(2,5), self.money_sender).start()
 
@@ -79,7 +80,7 @@ class Bank:
             tmp = client_sock.recv(16)
             if tmp is not None:
                 self.pkt_handler(tmp, bank_id)
-    
+
     def pkt_handler(self, pkt, bank_id):
         if pkt[0:1] != "S":#is a normal money transfer
             money = int(pkt)
@@ -133,7 +134,7 @@ class Bank:
                             ' ' + str(self.snapshot_received_money) + '\n')
 
 
-                            
+
     def start_snapshot(self):
         snapshot_progressive_id = 0
         while True:
@@ -141,7 +142,7 @@ class Bank:
                 with self.lock:
                     snapshot_progressive_id += 1
                     self.snapshot_received_money = 0
-                    self.snapshot_mode = snapshot_progressive_id 
+                    self.snapshot_mode = snapshot_progressive_id
                     self.snapshot_internal_state = self.total_money
                     for i in self.bank_list:
                         if i['id'] != self.bank_number:
