@@ -13,7 +13,6 @@ import errno
 import time
 from socket import error as socket_error
 class bankInterfaceOut():
-    #connected = False
     def __init__(self, host, port, bank_id, my_id):
         connected = False
         self.bank_host = host
@@ -21,14 +20,13 @@ class bankInterfaceOut():
         self.bank_id = bank_id
         self.my_id = my_id
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #FIXME add host param
         while (connected is not True):
             try:
-                print "i'm bank " + str(my_id) + " try to connect to " + str(self.bank_port)
+                print "[INFO]I'm bank " + str(my_id) + " try to connect to " + str(self.bank_port)
                 self.sock.connect((self.bank_host, self.bank_port))
                 connected = True
             except socket_error as serr:
-                print "somethings gone wrong, i'm trying to connect again in 2 seconds"
+                print "[ERROR]Somethings gone wrong, i'm trying to connect again in 2 seconds"
                 time.sleep(2)
         self.sock.send('%32s' % (self.my_id))
 
@@ -40,8 +38,8 @@ class bankInterfaceOut():
                 b_sent = self.sock.send('%16s' % (amount))
                 attempt = 4
             except socket_error as serr:
-                print "@@somethings gone wrong during the send, bank "\
-                        +str(self.my_id) + " donesn't responds i'm \
+                print "[ERROR]somethings gone wrong during the send, bank "\
+                        +str(self.my_id) + " donesn't responds. I'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)
                 attempt += 1
@@ -55,8 +53,8 @@ class bankInterfaceOut():
                 b_sent = self.sock.send('S%15s' % (snapshot_id))
                 attempt = 4
             except socket_error as serr:
-                print "@@somethings gone wrong during the send of token, bank "\
-                        +str(self.my_id) + " donesn't responds i'm \
+                print "[ERROR]Somethings gone wrong during the send of token, bank "\
+                        +str(self.my_id) + " donesn't responds. I'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)
                 attempt += 1
