@@ -16,7 +16,7 @@ class Bank:
 
     def __init__(self, host, port, flag_snapshot):
         self.lock = threading.Lock()
-        self.total_money = 1000
+        self.total_money = 1000000
         self.bank_number = host + ':' + str(port)
         self.bank_list = self.__parse_host_file()
         self.bank_interface_out_list = []
@@ -48,7 +48,7 @@ class Bank:
         while True:
             with self.lock:
                 if self.total_money != 0:
-                    money = int(random.uniform(1,self.total_money))
+                    money = int(random.uniform(1,min(100,self.total_money)))
                     to_send = random.randint(0,len(self.bank_interface_out_list)-1)
                     byte_sent =self.bank_interface_out_list[to_send].send_money(money)
                     if byte_sent != 0:
