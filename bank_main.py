@@ -1,5 +1,7 @@
 #!/usr/bin/python2.7
 
+# This script start one bank instance
+
 from bank import Bank
 import sys
 

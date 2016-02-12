@@ -1,4 +1,13 @@
 #!/usr/bin/python2.7
+
+
+# This class provides communication interface through two bank.
+# init function: provides connection to another bank.
+# Provides 2 methods:
+# send_money(amount): send money to the other bank
+# send_token(snapshot_id): send snapshot token to the other bank
+
+
 import socket
 import errno
 import time

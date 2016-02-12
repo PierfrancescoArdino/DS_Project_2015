@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 
-#call with ./start_banks.py hostname
+# This script start one process for every host's bank
+# call with ./start_banks.py hostname
 
 from bank import Bank
 import subprocess
