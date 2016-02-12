@@ -51,6 +51,9 @@ for line in tmp:
 
     bank_list.append(d)
 
+#delete previous logs
+subprocess.Popen(['./clean_logs.sh'])
+
 for bank in bank_list:
     #if is a bank of this host
     if bank['host'] == sys.argv[1]:
