@@ -1,5 +1,7 @@
 #!/usr/bin/python2.7
 
+# This class provides pkt_handler for money and snapshot, start the snapshot and implements the money transfert logic
+
 import socket
 import threading
 import signal
