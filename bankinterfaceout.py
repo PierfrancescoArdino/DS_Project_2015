@@ -40,7 +40,7 @@ class bankInterfaceOut():
                 b_sent = self.sock.send('%16s' % (amount))
                 attempt = 4
             except socket_error as serr:
-                print "somethings gone wrong during the send, bank "\
+                print "@@somethings gone wrong during the send, bank "\
                         +str(self.my_id) + " donesn't responds i'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)
@@ -55,7 +55,7 @@ class bankInterfaceOut():
                 b_sent = self.sock.send('S%15s' % (snapshot_id))
                 attempt = 4
             except socket_error as serr:
-                print "somethings gone wrong during the send of token, bank "\
+                print "@@somethings gone wrong during the send of token, bank "\
                         +str(self.my_id) + " donesn't responds i'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)

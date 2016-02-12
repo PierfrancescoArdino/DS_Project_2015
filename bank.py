@@ -79,7 +79,7 @@ class Bank:
 
     def recv_handl(self, client_sock, bank_id):
         while True:
-            tmp = client_sock.recv(16)
+            tmp = client_sock.recv(16, socket.MSG_WAITALL)
             if tmp is not None:
                 self.pkt_handler(tmp, bank_id)
 
