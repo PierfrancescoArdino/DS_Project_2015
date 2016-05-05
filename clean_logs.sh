@@ -1,3 +1,5 @@
 #!/bin/bash
-
-rm logs/*
+cd logs
+if [ "$(ls -A )" ]; then
+  rm *
+fi
