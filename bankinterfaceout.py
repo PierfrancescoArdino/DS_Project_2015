@@ -22,7 +22,7 @@ class bankInterfaceOut():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         while (connected is not True):
             try:
-                print "[INFO]I'm bank " + str(my_id) + " try to connect to " + str(self.bank_port)
+                print "[INFO]I'm bank " + str(my_id) + " try to connect to " + str(self.bank_id)
                 self.sock.connect((self.bank_host, self.bank_port))
                 connected = True
             except socket_error as serr:
@@ -39,7 +39,7 @@ class bankInterfaceOut():
                 attempt = 4
             except socket_error as serr:
                 print "[ERROR]somethings gone wrong during the send, bank "\
-                        +str(self.my_id) + " donesn't responds. I'm \
+                        +str(self.bank_id) + " donesn't responds. I'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)
                 attempt += 1
@@ -54,7 +54,7 @@ class bankInterfaceOut():
                 attempt = 4
             except socket_error as serr:
                 print "[ERROR]Somethings gone wrong during the send of token, bank "\
-                        +str(self.my_id) + " donesn't responds. I'm \
+                        +str(self.bank_id) + " donesn't responds. I'm \
                         trying to send again in 2 seconds"
                 time.sleep(2)
                 attempt += 1
